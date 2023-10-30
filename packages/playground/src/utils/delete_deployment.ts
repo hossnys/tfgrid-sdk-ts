@@ -59,7 +59,6 @@ export function solutionHasGateway(projectName: ProjectName) {
     ProjectName.Subsquid,
     ProjectName.Taiga,
     ProjectName.Wordpress,
-    ProjectName.Nextcloud,
   ];
   return solutions.includes(projectName) ? true : solutions.map(s => s.toLowerCase()).includes(projectName);
 }

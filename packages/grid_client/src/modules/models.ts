@@ -31,6 +31,12 @@ enum ContractStates {
   GracePeriod = "GracePeriod",
 }
 
+export enum NodeStatus {
+  up = "up",
+  down = "down",
+  standBy = "standby",
+}
+
 //TODO: find a way to validate all fields are passed while casting data to any of these classes.
 class AlgorandAccountCreateModel {
   @Expose() @IsString() @IsNotEmpty() @IsAlphanumeric() @MaxLength(NameLength) name: string;
@@ -278,7 +284,6 @@ class RentContractDeleteModel {
 class ContractGetModel {
   @Expose() @IsInt() @Min(1) id: number;
 }
-
 class ContractGetByNodeIdAndHashModel {
   @Expose() @IsInt() @Min(1) node_id: number;
   @Expose() @IsString() @IsNotEmpty() hash: string;
@@ -378,7 +383,12 @@ class KVStoreRemoveModel {
 class KVStoreBatchRemoveModel {
   @Expose() @ArrayNotEmpty() @IsString({ each: true }) keys: string[];
 }
-
+class DaoVoteModel {
+  @Expose() @IsString() @IsNotEmpty() address: string;
+  @Expose() @IsInt() @IsNotEmpty() @Min(1) farmId: number;
+  @Expose() @IsBoolean() approve: boolean;
+  @Expose() @IsString() @IsNotEmpty() hash: string;
+}
 class BalanceGetModel {
   @Expose() @IsString() @IsNotEmpty() address: string;
 }
@@ -423,7 +433,13 @@ class TfchainWalletInitModel {
 class TfchainWalletBalanceByAddressModel {
   @Expose() @IsString() @IsNotEmpty() address: string;
 }
-
+class TfchainDaoVoteModel {
+  @Expose() @IsString() @IsNotEmpty() @IsAlphanumeric() @MaxLength(NameLength) name: string;
+  @Expose() @IsString() @IsNotEmpty() address: string;
+  @Expose() @IsInt() @IsNotEmpty() @Min(1) farmId: number;
+  @Expose() @IsBoolean() approve: boolean;
+  @Expose() @IsString() @IsNotEmpty() hash: string;
+}
 class TfchainWalletTransferModel {
   @Expose() @IsString() @IsNotEmpty() @IsAlphanumeric() @MaxLength(NameLength) name: string;
   @Expose() @IsString() @IsNotEmpty() address_dest: string;
@@ -573,6 +589,7 @@ class FilterOptions {
   @Expose() @IsOptional() @IsBoolean() hasGPU?: boolean;
   @Expose() @IsOptional() @IsBoolean() rentable?: boolean;
   @Expose() @IsOptional() @IsInt() @Min(1) rentedBy?: number;
+  @Expose() @IsOptional() @Transform(({ value }) => NodeStatus[value]) @IsEnum(NodeStatus) status?: NodeStatus;
 }
 
 enum CertificationType {
@@ -596,6 +613,7 @@ class FarmFilterOptions {
   @Expose() @IsOptional() @IsInt() @Min(1) nodeRentedBy?: number;
   @Expose() @IsOptional() @IsInt() page?: number;
   @Expose() @IsOptional() @IsInt() size?: number;
+  @Expose() @IsOptional() @IsInt() ownedBy?: number;
   @Expose() @IsOptional() @IsInt() farmId?: number;
 }
 
@@ -667,6 +685,19 @@ class GetDedicatedNodePriceModel {
   @Expose() @IsInt() @IsNotEmpty() @Min(1) nodeId: number;
 }
 
+class SwapToStellarModel {
+  @Expose() @IsNotEmpty() @IsString() target: string;
+  @Expose() @IsNotEmpty() @Min(1) amount: number;
+}
+
+class ListenToMintCompletedModel {
+  @Expose() @IsNotEmpty() @IsString() address: string;
+}
+
+class GetActiveContractsModel {
+  @Expose() @IsInt() @IsNotEmpty() @Min(1) nodeId: number;
+}
+
 export {
   AlgorandAccountCreateModel,
   AlgorandAccountInitModel,
@@ -675,6 +706,7 @@ export {
   AlgorandCreateTransactionModel,
   AlgorandTransferModel,
   DiskModel,
+  DaoVoteModel,
   NetworkModel,
   MachineModel,
   MachinesModel,
@@ -751,6 +783,7 @@ export {
   TfchainWalletBalanceByAddressModel,
   TfchainWalletTransferModel,
   TfchainCreateModel,
+  TfchainDaoVoteModel,
   WalletMessageSignModel,
   BlockchainCreateModel,
   BlockchainCreateResultModel,
@@ -789,4 +822,7 @@ export {
   NodeGetModel,
   SetDedicatedNodeExtraFeesModel,
   GetDedicatedNodePriceModel,
+  SwapToStellarModel,
+  ListenToMintCompletedModel,
+  GetActiveContractsModel,
 };

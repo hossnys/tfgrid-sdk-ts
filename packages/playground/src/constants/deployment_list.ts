@@ -100,7 +100,6 @@ export const deploymentListEnvironments = {
 
   nextcloud: {
     SSH_KEY: _ssh,
-    NEXTCLOUD_AIO_LINK: "Nextcloud Setup",
     NEXTCLOUD_DOMAIN: "Nextcloud Domain",
   },
 

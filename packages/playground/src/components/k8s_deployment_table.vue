@@ -1,37 +1,10 @@
 <template>
   <v-alert v-if="!loading && count && items.length < count" type="warning" variant="tonal">
-    Failed to load <strong>{{ count - items.length }}</strong> deployment{{ count - items.length > 1 ? "s" : "" }}.
-
-    <span>
-      This might happen because the node is down or it's not reachable
-      <span v-if="showEncryption"
-        >or the deployment{{ count - items.length > 1 ? "s are" : " is" }} encrypted by another key</span
-      >.
-    </span>
-    <v-icon class="custom-icon" @click="showDialog = true">mdi-file-document-outline </v-icon>
-
-    <v-dialog transition="dialog-bottom-transition" v-model="showDialog" persistent max-width="500px">
-      <v-card>
-        <v-card-title style="color: #ffcc00; font-weight: bold">Failed Deployments</v-card-title>
-        <v-divider color="#FFCC00" />
-        <v-card-text>
-          <ul>
-            <li v-for="deployment in failedDeployments" :key="deployment.name">
-              {{
-                deployment.nodes.length > 0
-                  ? `${deployment.name} on node${deployment.nodes.length > 1 ? "s" : ""}: ${deployment.nodes.join(
-                      ", ",
-                    )}`
-                  : deployment.name
-              }}
-            </li>
-          </ul>
-        </v-card-text>
-        <v-card-actions class="justify-end">
-          <v-btn @click="showDialog = false" class="grey lighten-2 black--text" color="#FFCC00">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    Failed to load deployment{{ count - items.length > 1 ? "s" : "" }} with name{{
+      count - items.length > 1 ? "s" : ""
+    }}
+    <strong>{{ namesOfFailedDeployments }}</strong
+    >.
   </v-alert>
 
   <ListTable
@@ -96,9 +69,6 @@ import { getGrid, updateGrid } from "../utils/grid";
 import { loadK8s, mergeLoadedDeployments } from "../utils/load_deployment";
 
 const profileManager = useProfileManager();
-const showDialog = ref(false);
-const showEncryption = ref(false);
-const failedDeployments = ref<any[]>([]);
 
 const props = defineProps<{
   projectName: string;
@@ -110,6 +80,7 @@ defineEmits<{ (event: "update:model-value", value: any[]): void }>();
 const count = ref<number>();
 const items = ref<any[]>([]);
 const loading = ref(false);
+const namesOfFailedDeployments = ref("");
 
 onMounted(loadDeployments);
 async function loadDeployments() {
@@ -121,11 +92,8 @@ async function loadDeployments() {
   const chunk3 = await loadK8s(updateGrid(grid!, { projectName: "" }));
 
   const clusters = mergeLoadedDeployments(chunk1, chunk2, chunk3);
-  failedDeployments.value = [
-    ...(Array.isArray((chunk1 as any).failedDeployments) ? (chunk1 as any).failedDeployments : []),
-    ...(Array.isArray((chunk2 as any).failedDeployments) ? (chunk2 as any).failedDeployments : []),
-    ...(Array.isArray((chunk3 as any).failedDeployments) ? (chunk3 as any).failedDeployments : []),
-  ];
+  const failedDeployments = [...(chunk1 as any).failedK8s, ...(chunk2 as any).failedK8s, ...(chunk3 as any).failedK8s];
+  namesOfFailedDeployments.value = failedDeployments.join(", ");
 
   count.value = clusters.count;
   items.value = clusters.items;
